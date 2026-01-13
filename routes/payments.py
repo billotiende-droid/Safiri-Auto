@@ -99,7 +99,7 @@ class Payments(Resource):
         return [payment.to_dict() for payment in payments], 200
     
 class PaymentByID(Resource):
-    
+
     def get(self, id):
         # Get a specific payment by ID
         payment = Payment.query.get(id)
@@ -108,4 +108,56 @@ class PaymentByID(Resource):
             return {"error": "Payment not found"}, 404
 
         return payment.to_dict(), 200
+    
+    
+    def patch(self, id):
+        # Update payment status and complete payment.
+        # Used to mark payment as 'paid' after user completes payment in frontend.
+        
+        payment = Payment.query.get(id)
+
+        if not payment:
+            return {"error": "Payment not found"}, 404
+
+        data = request.get_json()
+        
+        # Validate amount if provided (must match original)
+        if "amount_paid" in data:
+            if int(data["amount_paid"]) != payment.amount_paid:
+                return {
+                    "error": "Amount does not match payment record",
+                    "expected": payment.amount_paid,
+                    "received": int(data["amount_paid"])
+                }, 400
+        
+        # Update payment status
+        if "payment_status" in data:
+            valid_statuses = ["pending", "paid", "failed"]
+            new_status = data["payment_status"]
+            
+            if new_status not in valid_statuses:
+                return {
+                    "error": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+                }, 400
+            
+            old_status = payment.payment_status
+            payment.payment_status = new_status
+            
+            # If payment is marked as paid, update booking status
+            if new_status == "paid" and old_status != "paid":
+                booking = Booking.query.get(payment.booking_id)
+                if booking:
+                    booking.status = "paid"
+            
+            db.session.commit()
+            
+            # Generate payment reference for successful payments
+            response = payment.to_dict()
+            if new_status == "paid":
+                response["payment_reference"] = generate_payment_ref()
+                response["message"] = "Payment completed successfully"
+            
+            return response, 200
+        
+        return {"error": "No valid fields to update"}, 400
     
