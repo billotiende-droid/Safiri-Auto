@@ -80,3 +80,21 @@ class Payments(Resource):
         response["message"] = "Payment initiated. Complete payment to confirm booking."
 
         return response, 201
+    
+    def get(self):
+        # Get all payments with optional filtering
+        # Optional: Filter by booking_id or payment_status
+        booking_id = request.args.get("booking_id")
+        status = request.args.get("status")
+
+        query = Payment.query
+
+        if booking_id:
+            query = query.filter_by(booking_id=int(booking_id))
+        
+        if status:
+            query = query.filter_by(payment_status=status)
+
+        payments = query.all()
+        return [payment.to_dict() for payment in payments], 200
+    
