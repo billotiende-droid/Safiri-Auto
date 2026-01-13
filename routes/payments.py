@@ -98,3 +98,14 @@ class Payments(Resource):
         payments = query.all()
         return [payment.to_dict() for payment in payments], 200
     
+class PaymentByID(Resource):
+    
+    def get(self, id):
+        # Get a specific payment by ID
+        payment = Payment.query.get(id)
+
+        if not payment:
+            return {"error": "Payment not found"}, 404
+
+        return payment.to_dict(), 200
+    
