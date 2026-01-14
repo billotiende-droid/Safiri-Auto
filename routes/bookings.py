@@ -70,7 +70,7 @@ def create_booking():
     
 
 # GET booking by ID (View customer's bookings: GET /bookings/<id>)
-@bookings_bp.route('users/<int:user_id>/bookings'y, methods=['GET'])
+@bookings_bp.route('users/<int:user_id>/bookings', methods=['GET'])
 def get_user_bookings(user_id):
     bookings = Booking.query.filter_by(customer_id=user_id).order_by(Booking.start_date.desc()).all()
 
