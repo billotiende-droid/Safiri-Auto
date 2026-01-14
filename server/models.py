@@ -20,7 +20,7 @@ class User(db.Model, SerializerMixin):
     serialize_rules = ('-bookings.customer', '-owner.user')
 
 
-class Owner(db.Model):
+class Owner(db.Model, SerializerMixin):
     __tablename__ = 'owners'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -33,17 +33,12 @@ class Owner(db.Model):
     id_number = db.Column(db.String(20), nullable=False, unique=True)
 
     #relationships
-    vehicles = db.relationship('Vehicle', backref='owner', lazy=True)
+    user = db.relationship('User', back_populates='owner')
+    vehicles = db.relationship('Vehicle', back_populates='owner', cascade='all, delete-orphan')
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "email": self.email,
-            "phone_number": self.phone_number,
-            "company_name": self.company_name,
-            "user_id": self.user_id
-        }
+    serialize_rules = ('-user.owner', '-vehicles.owner')
+
+   
 
 class Category(db.Model):
     __tablename__ = 'categories'
