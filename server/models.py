@@ -95,7 +95,7 @@ class Booking(db.Model, SerializerMixin):
     serialize_rules = ('-customer.bookings', '-vehicle.bookings', '-payment.booking', '-review.booking')
 
 
-class Payment(db.Model):
+class Payment(db.Model, SerializerMixin):
     __tablename__ = 'payments'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -108,17 +108,9 @@ class Payment(db.Model):
     payment_status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "booking_id": self.booking_id,
-            "amount_paid": self.amount_paid,
-            "payment_method": self.payment_method,
-            "platform_commission": self.platform_commission,
-            "owner_amount": self.owner_amount,
-            "payment_status": self.payment_status,
-            "created_at": self.created_at.isoformat()
-        }
+    booking = db.relationship('Booking', back_populates='payment')
+
+    serialize_rules = ('-booking.payment',)
 
 
 class Review(db.Model):
