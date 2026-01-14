@@ -16,7 +16,7 @@ def is_vehicle_available(vehicle_id, start_date, end_date):
 
     return conflicting_booking is None
 
-# POST for Booking
+# POST for Booking (POST /bookings)
 @bookings_bp.route('/bookings', methods=['POST'])
 def create_booking():
     
@@ -40,7 +40,7 @@ def create_booking():
             return jsonify({'error': 'Vehicle not available'}), 400
         
         if not is_vehicle_available():
-            return jsonify({"error": "Vehicle already booked for selected dates"}), 409
+            return jsonify({'error': 'Vehicle already booked for selected dates'}), 409
         
         # calculate total amount
         days = (end_date - start_date).days + 1
@@ -52,7 +52,7 @@ def create_booking():
             start_date=start_date,
             end_date=end_date,
             total_amount=total_amount,
-            status="pending"
+            status='pending'
         )
 
         db.session.add(booking)
@@ -67,3 +67,23 @@ def create_booking():
     
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
+    
+
+# GET booking by ID (View customer's bookings: GET /bookings/<id>)
+@bookings_bp.route('users/<int:user_id>/bookings'y, methods=['GET'])
+def get_user_bookings(user_id):
+    bookings = Booking.query.filter_by(customer_id=user_id).order_by(Booking.start_date.desc()).all()
+
+    result = []
+
+    for booking in bookings:
+        result.append({
+            'id': booking.id,
+            'vehicle_id': booking.vehicle_id,
+            'start_date': booking.start_date.isoformat(),
+            'end_date': booking.end_date.isoformat(),
+            'status': booking.status,
+            'total_amount': booking.total_amount
+        })
+
+    return jsonify(result), 200
