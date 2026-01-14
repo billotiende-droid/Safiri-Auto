@@ -27,5 +27,3 @@ class CategoryList(Resource):
         db.session.commit()
 
         return category.to_dict(), 201
-
-api.add_resource(CategoryList, '/categories')

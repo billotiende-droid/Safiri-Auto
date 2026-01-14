@@ -59,7 +59,6 @@ class VehicleList(Resource):
 
         return vehicle.to_dict(), 201
 
-api.add_resource(VehicleList, '/vehicles')
 
 
 
@@ -94,7 +93,6 @@ class VehicleResource(Resource):
         db.session.commit()
         return {"message": "Vehicle deleted"}, 200
 
-api.add_resource(VehicleResource, '/vehicles/<int:id>')
 
 
 
@@ -116,7 +114,3 @@ class VehicleStatus(Resource):
             "id": vehicle.id,
             "status": vehicle.status
         }, 200
-
-
-
-api.add_resource(VehicleStatus, '/vehicles/<int:id>/status')
