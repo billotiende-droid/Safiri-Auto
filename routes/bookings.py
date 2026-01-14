@@ -5,6 +5,13 @@ from server.models import db, Booking, Vehicle
 
 bookings_bp = Blueprint('bookings', __name__)
 
+# Logic to parse date
+def parse_date(value, field_name):
+    try:
+        return datetime.fromisoformat(value).date()
+    except Exception:
+        raise ValueError(f'Invalid date format for {field_name}. Use YYYY-MM-DD')
+
 # Logic to check vehicle availability
 def is_vehicle_available(vehicle_id, start_date, end_date):
     conflicting_booking = Booking.query.filter(
@@ -26,8 +33,8 @@ def create_booking():
         vehicle_id = data.get('vehicle_id')
         customer_id = data.get('customer_id')
 
-        start_date = data.get('start_date'), 'start_date'
-        end_date = data.get('end_date'), 'end_date'
+        start_date = parse_date(data.get('start_date'), 'start_date')
+        end_date = parse_date(data.get('end_date'), 'end_date')
 
         if start_date > end_date:
             return jsonify({'error': 'Start date cannot be after end date'}), 400
