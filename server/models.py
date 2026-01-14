@@ -74,7 +74,7 @@ class Vehicle(db.Model, SerializerMixin):
     serialize_rules = ('-owner.vehicles', '-category.vehicles', '-bookings.vehicle')
 
 
-class Booking(db.Model):
+class Booking(db.Model, SerializerMixin):
     __tablename__ = 'bookings'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -87,26 +87,12 @@ class Booking(db.Model):
     status = db.Column(db.String(20), default='pending')
     
     #relationships
-    payment = db.relationship('Payment', backref='booking', uselist=False)
-    review = db.relationship('Review', backref='booking', uselist=False)
+    customer = db.relationship('User', back_populates='bookings')
+    vehicle = db.relationship('Vehicle', back_populates='bookings')
+    payment = db.relationship('Payment', back_populates='booking', uselist=False, cascade='all, delete-orphan')
+    review = db.relationship('Review', back_populates='booking', uselist=False, cascade='all, delete-orphan')
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "start_date": self.start_date.isoformat(),
-            "end_date": self.end_date.isoformat(),
-            "total_amount": self.total_amount,
-            "status": self.status,
-            "vehicle": {
-                "id": self.vehicle.id,
-                "brand": self.vehicle.brand,
-                "model": self.vehicle.model
-            },
-            "customer": {
-                "id": self.customer.id,
-                "name": self.customer.name
-            }
-        }
+    serialize_rules = ('-customer.bookings', '-vehicle.bookings', '-payment.booking', '-review.booking')
 
 
 class Payment(db.Model):
