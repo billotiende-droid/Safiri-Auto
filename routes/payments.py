@@ -17,7 +17,6 @@ def calculate_commission(amount):
     owner_amount = amount - commission
     return commission, owner_amount
 
-class Payments(Resource):
     def post(self):
         # Create a new payment record for a booking.
         # Payment starts as 'pending' and will be updated to 'paid' when completed.
