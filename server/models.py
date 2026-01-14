@@ -131,11 +131,3 @@ class Review(db.Model, SerializerMixin):
     booking = db.relationship('Booking', back_populates='review')
 
     serialize_rules = ('-booking.review',)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "booking_id": self.booking_id,
-            "rating": self.rating,
-            "comment": self.comment
-        }
