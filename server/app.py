@@ -1,46 +1,73 @@
+# # server/app.py
+# from flask import Flask
+# from config import Config
+# from flask_cors import CORS
+# from flask_restful import Api
+# from extensions import db, migrate
+
+# def create_app():
+#     app = Flask(__name__)
+#     app.config.from_object(Config)
+
+#     # Initialize extensions with this app
+#     db.init_app(app)
+#     migrate.init_app(app, db)
+#     CORS(app)
+#     api = Api(app)
+
+
+
+# # ----------------------
+# # Inline configuration
+# # ----------------------
+# class Config:
+#     SQLALCHEMY_DATABASE_URI = "sqlite:///safiri.db"
+#     SQLALCHEMY_TRACK_MODIFICATIONS = False
+#     SECRET_KEY = "dev-secret-key"
+
+# # ----------------------
+# # App setup
+# # ----------------------
+# app = Flask(__name__)
+# app.config.from_object(Config)
+
+# # Initialize extensions
+# db.init_app(app)
+# migrate.init_app(app, db)
+# CORS(app)
+# api = Api(app)
+
+# # Health check route
+# @app.route("/health")
+# def health():
+#     return {"status": "ok"}
+
+
+#     @app.route("/health")
+#     def health():
+#         return {"status": "ok"}
+
+#     return app
+
+# # Optional: create global app for Flask CLI
+# app = create_app()
 from flask import Flask
-from .config import Config
-from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
 from flask_migrate import Migrate
-from flask_cors import CORS
-from flask_restful import Api, Resource
+from models import db, User, Owner, Category, Vehicle, Booking, Payment, Review
 
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///safiri.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+db.init_app(app)
+migrate = Migrate(app, db)
+api = Api(app)
 
+# Initialize database (create tables)
+with app.app_context():
+    db.create_all()
+    print("Database initialized with tables!")
 
-db = SQLAlchemy()
-migrate = Migrate()
-
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)  # Load config from config.py
-
-    # Initialize extensions with this app
-    db.init_app(app)
-    migrate.init_app(app, db)
-    CORS(app)
-
-    api = Api(app)
-
-    #Import resources here to avoid circular imports
-    from .routes.bookings import BookingListResource, BookingResource
-    from .routes.category import CategoryList
-    from .routes.vehicles import VehicleList, VehicleResource, VehicleStatus
-    from .routes.payments import Payments, PaymentByID
-
-
-    # Register resources
-   
-
-    # health check route
-    @app.route("/health")
-    def health():
-        return {"status": "ok"}
-
-    return app
-
-# Create a global app instance for Flask CLI
-app = create_app()
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(port=5555, debug=True)
