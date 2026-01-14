@@ -113,7 +113,7 @@ class Payment(db.Model, SerializerMixin):
     serialize_rules = ('-booking.payment',)
 
 
-class Review(db.Model):
+class Review(db.Model, SerializerMixin):
     __tablename__ = 'reviews'
     
 
@@ -127,6 +127,10 @@ class Review(db.Model):
 
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.String(255))
+    
+    booking = db.relationship('Booking', back_populates='review')
+
+    serialize_rules = ('-booking.review',)
 
     def to_dict(self):
         return {
