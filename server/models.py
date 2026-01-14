@@ -2,7 +2,7 @@ from datetime import datetime
 from extensions import db 
 from sqlalchemy_serializer import SerializerMixin
 
-class User(db.Model):
+class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -14,18 +14,10 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     #relationships
-    bookings = db.relationship('Booking', backref='customer', lazy=True)
+    bookings = db.relationship('Booking', back_populates='customer', cascade='all, delete-orphan')
+    owner = db.relationship('Owner', back_populates='user', uselist=False, cascade='all, delete-orphan')
    
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "email": self.email,
-            "phone_number": self.phone_number,
-            "residence": self.residence,
-            "is_owner": True if self.owner else False,
-            "created_at": self.created_at.isoformat()
-        }
+    serialize_rules = ('-bookings.customer', '-owner.user')
 
 
 class Owner(db.Model):
