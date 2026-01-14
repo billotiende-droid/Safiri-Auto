@@ -1,9 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask_restful import Resource
+from flask import request
 from datetime import datetime
 
 from server.models import db, Booking, Vehicle
 
-bookings_bp = Blueprint('bookings', __name__)
 
 # Logic to parse date
 def parse_date(value, field_name):
@@ -23,98 +23,100 @@ def is_vehicle_available(vehicle_id, start_date, end_date):
 
     return conflicting_booking is None
 
-# POST for Booking (POST /bookings)
-@bookings_bp.route('/bookings', methods=['POST'])
-def create_booking():
+# Total rental cost formula
+def calculate_total_cost(vehicle, start_date, end_date):
+        days = (end_date - start_date).days + 1
+        return days * vehicle.price_per_day
+
+
+
+# GET & POST for Booking Resource
+
+class BookingListResource(Resource):
     
-    data = request.get_json()
+    def get(self):
+        bookings = Booking.query.all()
+        return [booking.to_dict() for booking in bookings], 200
+    
+    def post(self):
+    
+        data = request.get_json()
 
-    try:
         vehicle_id = data.get('vehicle_id')
-        customer_id = data.get('customer_id')
+        start_date = parse_date(data.get('start_date'))
+        end_date = parse_date(data.get('end_date'))
 
-        start_date = parse_date(data.get('start_date'), 'start_date')
-        end_date = parse_date(data.get('end_date'), 'end_date')
-
+        if not all([vehicle_id, start_date, end_date]):
+            return {'error': 'vehicle_id, start_date and end_date are required'}, 400
+        
         if start_date > end_date:
-            return jsonify({'error': 'Start date cannot be after end date'}), 400
+            return {'error': 'Start date cannot be after end date'}, 400
         
         vehicle = Vehicle.query.get(vehicle_id)
         if not vehicle:
-            return jsonify({'error': 'Vehicle not found'}), 404
+            return {'error': 'Vehicle not found'}, 404
         
-        if vehicle.status != 'available':
-            return jsonify({'error': 'Vehicle not available'}), 400
+        if not is_vehicle_available(vehicle_id, start_date, end_date):
+            return {'error': 'Vehicle is not available for the selected dates'}, 400
         
-        if not is_vehicle_available():
-            return jsonify({'error': 'Vehicle already booked for selected dates'}), 409
-        
-        # calculate total amount
-        days = (end_date - start_date).days + 1
-        total_amount = days * vehicle.price_per_day
+        total_cost = calculate_total_cost(vehicle, start_date, end_date)
 
         booking = Booking(
             vehicle_id=vehicle_id,
-            customer_id=customer_id,
             start_date=start_date,
             end_date=end_date,
-            total_amount=total_amount,
-            status='pending'
+            total_cost=total_cost,
+            status='confirmed'
         )
+
+        vehicle.status = 'booked'
 
         db.session.add(booking)
         db.session.commit()
 
-        return jsonify({
-            'message': 'Booking created succsessfully',
-            'booking_id': booking.id,
-            'status': booking.status,
-            'total_amount': booking.total_amount
-        }), 201
-    
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
+        return booking.to_dict(), 201
     
 
-# GET booking by ID (View customer's bookings: GET /bookings/<id>)
-@bookings_bp.route('users/<int:user_id>/bookings', methods=['GET'])
-def get_user_bookings(user_id):
-    bookings = Booking.query.filter_by(customer_id=user_id).order_by(Booking.start_date.desc()).all()
-
-    result = []
-
-    for booking in bookings:
-        result.append({
-            'id': booking.id,
-            'vehicle_id': booking.vehicle_id,
-            'start_date': booking.start_date.isoformat(),
-            'end_date': booking.end_date.isoformat(),
-            'status': booking.status,
-            'total_amount': booking.total_amount
-        })
-
-    return jsonify(result), 200
-
-
-# PATCH for bookings (Cancel booking: /bookings/<id>/cancel)
-def cancel_booking(booking_id):
-    booking = Booking.query.get(booking_id)
-
-    if not booking:
-        return jsonify({'error': 'Booking not found'}), 404
+# GET, PATCH, DELETE booking by ID 
+class BookingResource(Resource):
     
-    if booking.status == 'completed':
-        return jsonify({'error': 'Completed bookings cannot be cancelled'}), 400
+    def get(self, id):
+        booking = Booking.query.get(id)
+        if not booking:
+            return {'error': 'Booking not found'}, 404
+        
+        return booking.to_dict(), 200
     
-    booking.status = 'cancelled'
+    def patch(self, id):
+        booking = Booking.query.get(id)
+        if not booking:
+            return {'error': 'Booking not found'}, 404
+        
+        if booking.status in ['cancelled', 'completed']:
+            return {'error': 'This booking cannot be modified'}, 400
+        
+        data = request.get_json()
+        new_status = data.get('status')
 
-    vehicle = Vehicle.query.get(booking.vehicle_id)
-    if vehicle:
-        vehicle.status = 'available'
+        if new_status not in ["confirmed", "cancelled", "completed"]:
+            return {'error': 'Invalid status value'}, 400
+        
+        booking.status = new_status
 
-    db.session.commit()
+        if new_status == 'cancelled':
+            vehicle = Vehicle.query.get(booking.vehicle_id)
+            if vehicle:
+                vehicle.status = 'available'
 
-    return jsonify({
-        'message': 'Booking cancelled successfully',
-        'booking_id': booking.id
-    }), 200
+        db.session.commit()
+        return booking.to_dict(), 200
+    
+    def delete(self, id):
+        booking = Booking.query.get(id)
+        if not booking:
+            return {'error': 'Booking not found'}, 404
+        
+        db.session.delete(booking)
+        db.session.commit()
+
+        return {'Booking deleted successfully'}, 200
