@@ -40,20 +40,16 @@ class Owner(db.Model, SerializerMixin):
 
    
 
-class Category(db.Model):
+class Category(db.Model, SerializerMixin):
     __tablename__ = 'categories'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
 
     #relationships
-    vehicles = db.relationship('Vehicle', backref='category', lazy=True)
+    vehicles = db.relationship('Vehicle', back_populates='category', cascade='all, delete-orphan')
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name
-        }
+    serialize_rules = ('-vehicles.category',)
 
 
 class Vehicle(db.Model):
