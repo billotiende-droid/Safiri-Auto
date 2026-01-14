@@ -98,4 +98,4 @@ with app.app_context():
 
     # Commit all changes
     db.session.commit()
-    print("Database seeded successfully!")
+    
