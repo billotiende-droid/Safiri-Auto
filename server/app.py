@@ -1,26 +1,35 @@
 from flask import Flask
+from .config import Config
+from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import event
-from sqlalchemy.engine import Engine
-import sqlite3
-from extensions import db  # using db from extensions
-import os
+from flask_cors import CORS
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, '../instance/app.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy()
+migrate = Migrate()
 
-db.init_app(app)  # initialize db with Flask app
-migrate = Migrate(app, db)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)  # Load config from config.py
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if isinstance(dbapi_connection, sqlite3.Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON;")
-        cursor.close()
+    # Initialize extensions with this app
+    db.init_app(app)
+    migrate.init_app(app, db)
+    CORS(app)
 
-import models  # absolute import
+    # health check route
+    @app.route("/health")
+    def health():
+        return {"status": "ok"}
+
+    #Blueprints will be registered here later
+   
+    # app.register_blueprint(vehicles_bp, url_prefix="/api")
+
+    return app
+
+# Create a global app instance for Flask CLI
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)
