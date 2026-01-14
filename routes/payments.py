@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import request
-from server import db, Payment, Booking
+from server.models import db, Payment, Booking
 from datetime import datetime
 import random
 import string
