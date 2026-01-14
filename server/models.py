@@ -52,7 +52,7 @@ class Category(db.Model, SerializerMixin):
     serialize_rules = ('-vehicles.category',)
 
 
-class Vehicle(db.Model):
+class Vehicle(db.Model, SerializerMixin):
     __tablename__ = 'vehicles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -67,23 +67,11 @@ class Vehicle(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
 
     #relationships
-    bookings = db.relationship('Booking', backref='vehicle', lazy=True)
+    owner = db.relationship('Owner', back_populates='vehicles')
+    category = db.relationship('Category', back_populates='vehicles')
+    bookings = db.relationship('Booking', back_populates='vehicle', cascade='all, delete-orphan')
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "registration_number": self.registration_number,
-            "brand": self.brand,
-            "model": self.model,
-            "price_per_day": self.price_per_day,
-            "status": self.status,
-            "is_verified": self.is_verified,
-            "category": self.category.to_dict() if self.category else None,
-            "owner": {
-                "id": self.owner.id,
-                "name": self.owner.name
-            } if self.owner else None
-        }
+    serialize_rules = ('-owner.vehicles', '-category.vehicles', '-bookings.vehicle')
 
 
 class Booking(db.Model):
