@@ -87,3 +87,27 @@ def get_user_bookings(user_id):
         })
 
     return jsonify(result), 200
+
+
+# PATCH for bookings (Cancel booking: /bookings/<id>/cancel)
+def cancel_booking(booking_id):
+    booking = Booking.query.get(booking_id)
+
+    if not booking:
+        return jsonify({'error': 'Booking not found'}), 404
+    
+    if booking.status == 'completed':
+        return jsonify({'error': 'Completed bookings cannot be cancelled'}), 400
+    
+    booking.status = 'cancelled'
+
+    vehicle = Vehicle.query.get(booking.vehicle_id)
+    if vehicle:
+        vehicle.status = 'available'
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Booking cancelled successfully',
+        'booking_id': booking.id
+    }), 200
