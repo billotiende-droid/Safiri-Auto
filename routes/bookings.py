@@ -43,8 +43,12 @@ class BookingListResource(Resource):
         data = request.get_json()
 
         vehicle_id = data.get('vehicle_id')
-        start_date = parse_date(data.get('start_date'))
-        end_date = parse_date(data.get('end_date'))
+
+        try:
+            start_date = parse_date(data.get('start_date'), 'start_date')
+            end_date = parse_date(data.get('end_date'), 'end_date')
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
         if not all([vehicle_id, start_date, end_date]):
             return {'error': 'vehicle_id, start_date and end_date are required'}, 400
@@ -57,7 +61,7 @@ class BookingListResource(Resource):
             return {'error': 'Vehicle not found'}, 404
         
         if not is_vehicle_available(vehicle_id, start_date, end_date):
-            return {'error': 'Vehicle is not available for the selected dates'}, 400
+            return {'error': 'Vehicle is not available for the selected dates'}, 409
         
         total_cost = calculate_total_cost(vehicle, start_date, end_date)
 
@@ -66,10 +70,8 @@ class BookingListResource(Resource):
             start_date=start_date,
             end_date=end_date,
             total_cost=total_cost,
-            status='confirmed'
+            status='pending'
         )
-
-        vehicle.status = 'booked'
 
         db.session.add(booking)
         db.session.commit()
@@ -92,21 +94,33 @@ class BookingResource(Resource):
         if not booking:
             return {'error': 'Booking not found'}, 404
         
-        if booking.status in ['cancelled', 'completed']:
-            return {'error': 'This booking cannot be modified'}, 400
-        
         data = request.get_json()
         new_status = data.get('status')
 
-        if new_status not in ["confirmed", "cancelled", "completed"]:
-            return {'error': 'Invalid status value'}, 400
+        allowed_transitions = {
+            'pending': ['confirmed', 'cancelled'],
+            'confirmed': ['completed', 'cancelled'],
+            'completed': [],
+            'cancelled': []
+        }
+
+        if new_status not in allowed_transitions.get(booking.status, []):
+            return {'error': f'Cannot change status from {booking.status} to {new_status}'}, 400
         
         booking.status = new_status
 
-        if new_status == 'cancelled':
-            vehicle = Vehicle.query.get(booking.vehicle_id)
-            if vehicle:
-                vehicle.status = 'available'
+
+        vehicle = Vehicle.query.get(booking.vehicle_id)
+
+
+        if new_status == 'confirmed' and vehicle:
+            vehicle.status = 'booked'
+
+        if new_status == 'cancelled' and vehicle:
+            vehicle.status = 'available'
+
+        if new_status == 'completed' and vehicle:
+            vehicle.status = 'available'
 
         db.session.commit()
         return booking.to_dict(), 200
@@ -119,4 +133,4 @@ class BookingResource(Resource):
         db.session.delete(booking)
         db.session.commit()
 
-        return {'Booking deleted successfully'}, 200
+        return {'message': 'Booking deleted successfully'}, 200
