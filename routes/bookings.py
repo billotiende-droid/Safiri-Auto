@@ -76,7 +76,16 @@ class BookingListResource(Resource):
         db.session.add(booking)
         db.session.commit()
 
-        return booking.to_dict(), 201
+        response = {
+            'id': booking.id,
+            'vehicle_id': booking.vehicle_id,
+            'start_date': booking.start_date.isoformat(),
+            'end_date': booking.end_date.isoformat(),
+            'total_cost': booking.total_cost,
+            'status': booking.status
+        }
+
+        return response, 201
     
 
 # GET, PATCH, DELETE booking by ID 
@@ -87,7 +96,15 @@ class BookingResource(Resource):
         if not booking:
             return {'error': 'Booking not found'}, 404
         
-        return booking.to_dict(), 200
+        response = {
+            'id': booking.id,
+            'vehicle_id': booking.vehicle_id,
+            'start_date': booking.start_date.isoformat(),
+            'end_date': booking.end_date.isoformat(),
+            'status': booking.status
+        }
+        
+        return response, 200
     
     def patch(self, id):
         booking = Booking.query.get(id)
