@@ -10,7 +10,6 @@ class CategoryList(Resource):
     # GET
     def get(self):
         categories = Category.query.all()
-        return [c.to_dict() for c in categories], 200
 
         response = []
         for c in categories:
