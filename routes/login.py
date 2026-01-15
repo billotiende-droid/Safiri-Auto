@@ -55,5 +55,17 @@ class Login(Resource):
         #  owners verification check
         if role == "owner" and not getattr(account, "is_verified", True):
             return {"error": "Account not verified"}, 403
+        
+        response = {
+            "message": "Login successful",
+            "token": token,
+            "role": role,
+            "account": {
+                "id": account.id,
+                "name": getattr(account, "name", None)
+            }
+        }
+
+        return response, 200
 
 
