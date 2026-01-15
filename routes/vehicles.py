@@ -1,7 +1,7 @@
 
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
-from server.models import Vehicle
+from server.models import Vehicle, db, Category, Owner
 
 # GET and POST Requests
 class VehicleList(Resource):
