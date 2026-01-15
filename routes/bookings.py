@@ -35,8 +35,22 @@ def calculate_total_cost(vehicle, start_date, end_date):
 class BookingListResource(Resource):
     
     def get(self):
+        
         bookings = Booking.query.all()
-        return [booking.to_dict() for booking in bookings], 200
+
+        response = [
+             {
+            'id': booking.id,
+            'vehicle_id': booking.vehicle_id,
+            'start_date': booking.start_date.isoformat(),
+            'end_date': booking.end_date.isoformat(),
+            'status': booking.status
+        }
+
+        for booking in bookings
+        ]
+
+        return response, 200
     
     def post(self):
     
