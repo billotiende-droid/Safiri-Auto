@@ -36,3 +36,9 @@ class Login(Resource):
         ).first()
         role = "user"
 
+        # if not users try owners tables
+
+        if not acount:
+            account = ownner.query.filter(Owner.email == identifier).first
+            role = "owner"
+
