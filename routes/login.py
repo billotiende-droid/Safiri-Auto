@@ -11,17 +11,28 @@ EXPECTATIONS
 from flask_restful import Resource 
 from models import User, Owner
 from services.auth_service import generate_token
-
+from flask import request
 
 # login resource
 
 class Login(Resource):
 
     def post(self):
-        data = reques.get_json()
+        data = request.get_json()
+
+        #  input validation
+        if not data:
+            return {"error": "Request must be JSON"}, 400
+
+        identifier = data.get("email") or data.get("phone_number")
+        password = data.get("password")
+
+        if not identifier or not password:
+            return {"error": "Email/phone and password are required"}, 400
 
         # search for user table(to get credentials)
-        account =User.query.filter((user.email == identifier) (user.phone_number == identifier).first())
+        account = User.query.filter(
+            (User.email == identifier) | (User.phone_number == identifier)
+        ).first()
         role = "user"
-        pass
 
