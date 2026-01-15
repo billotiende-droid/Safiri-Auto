@@ -38,7 +38,9 @@ class Login(Resource):
 
         # if not users try owners tables
 
-        if not acount:
-            account = ownner.query.filter(Owner.email == identifier).first
+        if not account:
+            account = Owner.query.filter(
+                (Owner.email == identifier) | (Owner.phone_number == identifier)
+            ).first()
             role = "owner"
 
