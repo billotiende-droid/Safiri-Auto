@@ -17,13 +17,15 @@ class User(db.Model, SerializerMixin):
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
     id_number = db.Column(db.String(20), nullable=False, unique=True)
     residence = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     #relationships
     bookings = db.relationship('Booking', back_populates='customer', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user', uselist=False, cascade='all, delete-orphan')
    
-    serialize_rules = ('-bookings', '-owner')
+    #exclude sensitive data
+    serialize_rules = ('-bookings', '-owner', '-password')
 
 
 class Owner(db.Model, SerializerMixin):
