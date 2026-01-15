@@ -1,6 +1,12 @@
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Metadata
 from datetime import datetime
-from extensions import db 
+
 from sqlalchemy_serializer import SerializerMixin
+
+metadata = MetaData()
+db = SQLAlchemy(metadata=metadata)
+
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
