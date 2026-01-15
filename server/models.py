@@ -17,7 +17,7 @@ class User(db.Model, SerializerMixin):
     bookings = db.relationship('Booking', back_populates='customer', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user', uselist=False, cascade='all, delete-orphan')
    
-    serialize_rules = ('-bookings.customer', '-owner.user')
+    serialize_rules = ('-bookings', '-owner')
 
 
 class Owner(db.Model, SerializerMixin):
