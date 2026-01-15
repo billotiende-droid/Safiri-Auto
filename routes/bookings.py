@@ -24,7 +24,7 @@ def is_vehicle_available(vehicle_id, start_date, end_date):
     return conflicting_booking is None
 
 # Total rental cost formula
-def calculate_total_cost(vehicle, start_date, end_date):
+def calculate_total_amount(vehicle, start_date, end_date):
         days = (end_date - start_date).days + 1
         return days * vehicle.price_per_day
 
@@ -77,7 +77,7 @@ class BookingListResource(Resource):
         if not is_vehicle_available(vehicle_id, start_date, end_date):
             return {'error': 'Vehicle is not available for the selected dates'}, 409
         
-        total_cost = calculate_total_cost(vehicle, start_date, end_date)
+        total_cost = calculate_total_amount(vehicle, start_date, end_date)
 
         booking = Booking(
             vehicle_id=vehicle_id,
