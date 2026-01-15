@@ -1,35 +1,43 @@
 from flask import Flask
-from .config import Config
-from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
 from flask_migrate import Migrate
-from flask_cors import CORS
+from models import db
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///safiri.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+migrate = Migrate(app, db)
+api = Api(app)
+
+# Import routes
+from routes.vehicles import VehicleList, VehicleResource, VehicleStatus
+from routes.bookings import BookingListResource, BookingResource
+from routes.categories import CategoryList
+from routes.payments import Payments, PaymentByID
 
 
-db = SQLAlchemy()
-migrate = Migrate()
+# Register routes
+api.add_resource(VehicleList, '/api/vehicles')
+api.add_resource(VehicleResource, '/api/vehicles/<int:id>')
+api.add_resource(VehicleStatus, '/vehicles/<int:id>/status')
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)  # Load config from config.py
+api.add_resource(BookingListResource, "/api/bookings")
+api.add_resource(BookingResource, "/api/bookings/<int:id>")
 
-    # Initialize extensions with this app
-    db.init_app(app)
-    migrate.init_app(app, db)
-    CORS(app)
+api.add_resource(Payments,'/api/payments')
+api.add_resource(PaymentByID,'/api/payment/<int:id>')
 
-    # health check route
-    @app.route("/health")
-    def health():
-        return {"status": "ok"}
+api.add_resource(CategoryList, '/categories')
 
-    #Blueprints will be registered here later
-   
-    # app.register_blueprint(vehicles_bp, url_prefix="/api")
 
-    return app
 
-# Create a global app instance for Flask CLI
-app = create_app()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# Initialize database (create tables)
+with app.app_context():
+    db.create_all()
+    print("Database initialized with tables!")
+
+if __name__ == '__main__':
+    app.run(port=5555, debug=True)
