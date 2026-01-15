@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Metadata
+from sqlalchemy import MetaData
 from datetime import datetime
-
 from sqlalchemy_serializer import SerializerMixin
 
 metadata = MetaData()
