@@ -1,1 +1,4 @@
 .env
+server/instance/
+server/migrations/
+
