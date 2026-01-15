@@ -1,7 +1,7 @@
 
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
-from server.models import Vehicle
+from server.models import Vehicle, db, Category, Owner
 
 # GET and POST Requests
 class VehicleList(Resource):
@@ -20,7 +20,21 @@ class VehicleList(Resource):
             query = query.filter_by(status=status)
 
         vehicles = query.all()
-        return [v.to_dict() for v in vehicles], 200
+
+        response = []
+        for v in vehicles:
+            response.append({
+                "owner_id": v.owner_id,
+                "category_id": v.category_id,
+                "registration_number": v.registration_number,
+                "brand": v.brand,
+                "model": v.model,
+                "price_per_day": v.price_per_day,
+                "status": v.status,
+                "is_verified":is_verified
+            })
+
+        return response, 200
 
 
     # POST
@@ -57,7 +71,17 @@ class VehicleList(Resource):
         db.session.add(vehicle)
         db.session.commit()
 
-        return vehicle.to_dict(), 201
+        response = {
+            "owner_id":vehicle.owner_id,
+            "category_id":vehicle.category_id,
+            "registration_number":vehicle.registration_number,
+            "brand":vehicle.brand,
+            "model":vehicle.model,
+            "price_per_day":vehicle.price_per_day,
+            "status":vehicle.status
+        }
+
+        return response, 201
 
 
 
@@ -67,7 +91,18 @@ class VehicleResource(Resource):
 
     def get(self, id):
         vehicle = Vehicle.query.get_or_404(id)
-        return vehicle.to_dict(), 200
+
+        response = {
+            "owner_id":vehicle.owner_id,
+            "category_id":vehicle.category_id,
+            "registration_number":vehicle.registration_number,
+            "brand":vehicle.brand,
+            "model":vehicle.model,
+            "price_per_day":vehicle.price_per_day,
+            "status":vehicle.status
+        }
+
+        return response, 200
 
     def patch(self, id):
         vehicle = Vehicle.query.get_or_404(id)
@@ -85,7 +120,15 @@ class VehicleResource(Resource):
                 setattr(vehicle, field, data[field])
 
         db.session.commit()
-        return vehicle.to_dict(), 200
+
+        response = {
+            "vehicle_id":vehicle.id,
+            "category_id":vehicle.category_id,
+            "price_per_day":vehicle.price_per_day,
+            "status":vehicle.status,
+            "is_verified":vehicle.is_verified
+        }
+        return response, 200
 
     def delete(self, id):
         vehicle = Vehicle.query.get_or_404(id)

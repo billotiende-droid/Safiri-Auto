@@ -1,5 +1,5 @@
 
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
 from server.models import db, Category
 
@@ -10,7 +10,15 @@ class CategoryList(Resource):
     # GET
     def get(self):
         categories = Category.query.all()
-        return [c.to_dict() for c in categories], 200
+
+        response = []
+        for c in categories:
+            response.append({
+                "category_id": c.id,
+                "name": c.name,
+            })
+
+        return response, 200
 
     # POST
     def post(self):
@@ -26,4 +34,9 @@ class CategoryList(Resource):
         db.session.add(category)
         db.session.commit()
 
-        return category.to_dict(), 201
+        response = {
+            "category_id":category.id,
+            "category_id":category.name,
+        }
+
+        return response, 201
