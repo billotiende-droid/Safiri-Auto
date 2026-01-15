@@ -9,13 +9,19 @@ EXPECTATIONS
 
 # Imports
 from flask_restful import Resource 
-from models import user, Owner
+from models import User, Owner
+from services.auth_service import generate_token
+
 
 # login resource
 
 class Login(Resource):
 
     def post(self):
+        data = reques.get_json()
+
+        # search for user table(to get credentials)
+        account =User.query.filter((user.email == identifier) (user.phone_number == identifier).first())
+        role = "user"
         pass
 
-    
