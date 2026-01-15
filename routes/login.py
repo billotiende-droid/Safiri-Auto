@@ -48,6 +48,12 @@ class Login(Resource):
         if not account:
             return {"error": "Invalid credentials"}, 401
         
+        # Verify password
+        if not check_password_hash(account.password, password):
+            return {"error": "Invalid credentials"}, 401
         
+        #  owners verification check
+        if role == "owner" and not getattr(account, "is_verified", True):
+            return {"error": "Account not verified"}, 403
 
 
