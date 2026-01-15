@@ -76,10 +76,16 @@ class PaymentsResource(Resource):
         db.session.commit()
 
         # Return payment details
-        response = payment.to_dict()
-        response["message"] = "Payment initiated. Complete payment to confirm booking."
+        response_message = {
+        "id": payment.id,
+        "booking_id": payment.booking_id,
+        "amount_paid": payment.amount_paid,
+        "payment_status": payment.payment_status,
+        "payment_method": payment.payment_method,
+        }
+        response_message["message"] = "Payment initiated. Complete payment to confirm booking."
 
-        return response, 201
+        return response_message, 201
     
     def get(self):
         # Get all payments with optional filtering
@@ -96,7 +102,18 @@ class PaymentsResource(Resource):
             query = query.filter_by(payment_status=status)
 
         payments = query.all()
-        return [payment.to_dict() for payment in payments], 200
+
+        response_message = [
+            {
+            "id": payment.id,
+            "booking_id": payment.booking_id,
+            "amount_paid": payment.amount_paid,
+            "payment_status": payment.payment_status,
+            "payment_method": payment.payment_method,
+            }
+            for payment in payments 
+        ]
+        return response_message, 200
     
 class PaymentByID(Resource):
 
@@ -106,8 +123,16 @@ class PaymentByID(Resource):
 
         if not payment:
             return {"error": "Payment not found"}, 404
+        
+        response_message = {
+        "id": payment.id,
+        "booking_id": payment.booking_id,
+        "amount_paid": payment.amount_paid,
+        "payment_status": payment.payment_status,
+        "payment_method": payment.payment_method,
+        }
 
-        return payment.to_dict(), 200
+        return response_message, 200
     
     
     def patch(self, id):
@@ -152,12 +177,18 @@ class PaymentByID(Resource):
             db.session.commit()
             
             # Generate payment reference for successful payments
-            response = payment.to_dict()
+            response_message = {
+            "id": payment.id,
+            "booking_id": payment.booking_id,
+            "amount_paid": payment.amount_paid,
+            "payment_status": payment.payment_status,
+            "payment_method": payment.payment_method,
+            }
             if new_status == "paid":
-                response["payment_reference"] = generate_payment_ref()
-                response["message"] = "Payment completed successfully"
+                response_message["payment_reference"] = generate_payment_ref()
+                response_message["message"] = "Payment completed successfully"
             
-            return response, 200
+            return response_message, 200
         
         return {"error": "No valid fields to update"}, 400
     
