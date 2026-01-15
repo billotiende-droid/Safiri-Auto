@@ -49,7 +49,7 @@ class Category(db.Model, SerializerMixin):
     #relationships
     vehicles = db.relationship('Vehicle', back_populates='category', cascade='all, delete-orphan')
 
-    serialize_rules = ('-vehicles.category',)
+    serialize_rules = ('-vehicles.category', '-vehicles.owner', '-vehicles.booking',) 
 
 
 class Vehicle(db.Model, SerializerMixin):
