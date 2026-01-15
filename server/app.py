@@ -36,11 +36,5 @@ api.add_resource(Login, '/api/login' )
 
 
 
-
-# Initialize database (create tables)
-with app.app_context():
-    db.create_all()
-    print("Database initialized with tables!")
-
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

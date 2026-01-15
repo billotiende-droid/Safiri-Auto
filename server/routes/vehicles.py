@@ -31,7 +31,7 @@ class VehicleList(Resource):
                 "model": v.model,
                 "price_per_day": v.price_per_day,
                 "status": v.status,
-                "is_verified":is_verified
+                "is_verified":v.is_verified
             })
 
         return response, 200
