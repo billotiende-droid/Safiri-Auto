@@ -36,7 +36,7 @@ class Owner(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='owner')
     vehicles = db.relationship('Vehicle', back_populates='owner', cascade='all, delete-orphan')
 
-    serialize_rules = ('-user.owner', '-vehicles.owner')
+    serialize_rules = ('-user', '-vehicles.owner')
 
    
 
