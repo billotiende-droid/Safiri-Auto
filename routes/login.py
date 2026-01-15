@@ -44,3 +44,10 @@ class Login(Resource):
             ).first()
             role = "owner"
 
+        # for invalid credentials
+        if not account:
+            return {"error": "Invalid credentials"}, 401
+        
+        
+
+
