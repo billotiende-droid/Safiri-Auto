@@ -15,7 +15,8 @@ api = Api(app)
 from routes.vehicles import VehicleList, VehicleResource, VehicleStatus
 from routes.bookings import BookingListResource, BookingResource
 from routes.categories import CategoryList
-from routes.payments import Payments, PaymentByID
+from routes.payments import PaymentsResource, PaymentByID
+from routes.logins import Login
 
 
 # Register routes
@@ -26,10 +27,12 @@ api.add_resource(VehicleStatus, '/vehicles/<int:id>/status')
 api.add_resource(BookingListResource, "/api/bookings")
 api.add_resource(BookingResource, "/api/bookings/<int:id>")
 
-api.add_resource(Payments,'/api/payments')
+api.add_resource(PaymentsResource,'/api/payments')
 api.add_resource(PaymentByID,'/api/payment/<int:id>')
 
 api.add_resource(CategoryList, '/categories')
+
+api.add_resource(Login, '/api/login' )
 
 
 
