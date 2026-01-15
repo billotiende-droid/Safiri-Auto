@@ -12,6 +12,7 @@ from flask_restful import Resource
 from models import User, Owner
 from services.auth_service import generate_token
 from flask import request
+from werkzeug.security import check_password_hash
 
 # login resource
 
