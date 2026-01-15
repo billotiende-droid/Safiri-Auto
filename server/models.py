@@ -22,7 +22,7 @@ class User(db.Model, SerializerMixin):
     bookings = db.relationship('Booking', back_populates='customer', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user', uselist=False, cascade='all, delete-orphan')
    
-    serialize_rules = ('-bookings.customer', '-owner.user')
+    serialize_rules = ('-bookings', '-owner')
 
 
 class Owner(db.Model, SerializerMixin):
@@ -41,7 +41,7 @@ class Owner(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='owner')
     vehicles = db.relationship('Vehicle', back_populates='owner', cascade='all, delete-orphan')
 
-    serialize_rules = ('-user.owner', '-vehicles.owner')
+    serialize_rules = ('-user', '-vehicles.owner')
 
    
 
@@ -54,7 +54,7 @@ class Category(db.Model, SerializerMixin):
     #relationships
     vehicles = db.relationship('Vehicle', back_populates='category', cascade='all, delete-orphan')
 
-    serialize_rules = ('-vehicles.category',)
+    serialize_rules = ('-vehicles.category', '-vehicles.owner', '-vehicles.booking',) 
 
 
 class Vehicle(db.Model, SerializerMixin):
