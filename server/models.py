@@ -16,13 +16,15 @@ class User(db.Model, SerializerMixin):
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
     id_number = db.Column(db.String(20), nullable=False, unique=True)
     residence = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     #relationships
     bookings = db.relationship('Booking', back_populates='customer', cascade='all, delete-orphan')
     owner = db.relationship('Owner', back_populates='user', uselist=False, cascade='all, delete-orphan')
    
-    serialize_rules = ('-bookings', '-owner')
+    #exclude sensitive data
+    serialize_rules = ('-bookings', '-owner', '-password')
 
 
 class Owner(db.Model, SerializerMixin):
@@ -36,12 +38,15 @@ class Owner(db.Model, SerializerMixin):
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
     company_name = db.Column(db.String(100))
     id_number = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)  
+
 
     #relationships
     user = db.relationship('User', back_populates='owner')
     vehicles = db.relationship('Vehicle', back_populates='owner', cascade='all, delete-orphan')
 
-    serialize_rules = ('-user', '-vehicles.owner')
+    serialize_rules = ('-user', '-vehicles.owner', '-password')
 
    
 
