@@ -44,7 +44,7 @@ class UserProfile(ProtectedResource) :
         if not account :
             return {"error":"Account not found."}, 404
         
-        for field in ["name", "email," "phone_number", "residence"]:
+        for field in ["name", "email", "phone_number", "residence"]:
             if field in data :
                 setattr(account, field, data[field])
         
