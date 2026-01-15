@@ -17,6 +17,7 @@ from routes.bookings import BookingListResource, BookingResource
 from routes.categories import CategoryList
 from routes.payments import PaymentsResource, PaymentByID
 from routes.logins import Login
+from routes.user_profile import UserProfile
 
 
 # Register routes
@@ -31,8 +32,11 @@ api.add_resource(PaymentsResource,'/api/payments')
 api.add_resource(PaymentByID,'/api/payment/<int:id>')
 
 api.add_resource(CategoryList, '/categories')
+api.add_resource(UserProfile, '/api/signup')
 
 api.add_resource(Login, '/api/login' )
+
+
 
 
 
