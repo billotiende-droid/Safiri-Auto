@@ -1,7 +1,7 @@
 # Imports
 from flask_restful import Resource 
 from models import User, Owner
-from services.auth_service import generate_token
+from services.auth import generate_token
 from flask import request
 from werkzeug.security import check_password_hash
 
@@ -48,13 +48,19 @@ class Login(Resource):
         if role == "owner" and not getattr(account, "is_verified", True):
             return {"error": "Account not verified"}, 403
         
+        # Generate JWT token for the account
+        token = generate_token(account.id, role)
+
+        # New descriptive response
         response = {
             "message": "Login successful",
             "token": token,
             "role": role,
             "account": {
                 "id": account.id,
-                "name": getattr(account, "name", None)
+                "name": getattr(account, "name", None),
+                "email": getattr(account, "email", None),
+                "phone_number": getattr(account, "phone_number", None)
             }
         }
 
