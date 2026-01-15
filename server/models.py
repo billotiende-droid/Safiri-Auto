@@ -38,12 +38,15 @@ class Owner(db.Model, SerializerMixin):
     phone_number = db.Column(db.String(20), nullable=False, unique=True)
     company_name = db.Column(db.String(100))
     id_number = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)  
+
 
     #relationships
     user = db.relationship('User', back_populates='owner')
     vehicles = db.relationship('Vehicle', back_populates='owner', cascade='all, delete-orphan')
 
-    serialize_rules = ('-user', '-vehicles.owner')
+    serialize_rules = ('-user', '-vehicles.owner', '-password')
 
    
 
