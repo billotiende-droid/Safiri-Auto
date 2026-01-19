@@ -35,8 +35,8 @@ class CategoryList(Resource):
         db.session.commit()
 
         response = {
-            "category_id":category.id,
-            "category_id":category.name,
+            "category_id": category.id,
+            "name": category.name,
         }
 
         return response, 201

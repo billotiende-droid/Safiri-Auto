@@ -2,7 +2,8 @@ from flask_restful import Resource
 from flask import request
 from datetime import datetime
 
-from models import db, Booking, Vehicle
+from models import db, Booking, Vehicle, User
+from services.protected_resource import ProtectedResource
 
 
 # Logic to parse date
@@ -32,28 +33,27 @@ def calculate_total_amount(vehicle, start_date, end_date):
 
 # GET & POST for Booking Resource
 
-class BookingListResource(Resource):
+class BookingListResource(ProtectedResource):
     
     def get(self):
-        
+
         bookings = Booking.query.all()
 
         response = [
-             {
-            'id': booking.id,
-            'vehicle_id': booking.vehicle_id,
-            'start_date': booking.start_date.isoformat(),
-            'end_date': booking.end_date.isoformat(),
-            'status': booking.status
-        }
-
-        for booking in bookings
+            {
+                'id': booking.id,
+                'vehicle_id': booking.vehicle_id,
+                'start_date': booking.start_date.isoformat(),
+                'end_date': booking.end_date.isoformat(),
+                'status': booking.status
+            }
+            for booking in bookings
         ]
 
         return response, 200
     
     def post(self):
-    
+
         data = request.get_json()
 
         vehicle_id = data.get('vehicle_id')
@@ -66,24 +66,31 @@ class BookingListResource(Resource):
 
         if not all([vehicle_id, start_date, end_date]):
             return {'error': 'vehicle_id, start_date and end_date are required'}, 400
-        
+
         if start_date > end_date:
             return {'error': 'Start date cannot be after end date'}, 400
-        
+
         vehicle = Vehicle.query.get(vehicle_id)
         if not vehicle:
             return {'error': 'Vehicle not found'}, 404
-        
+
         if not is_vehicle_available(vehicle_id, start_date, end_date):
             return {'error': 'Vehicle is not available for the selected dates'}, 409
-        
-        total_cost = calculate_total_amount(vehicle, start_date, end_date)
+
+        # Get customer_id from JWT token
+        customer_id = self.user_payload['sub']
+        customer = User.query.get(customer_id)
+        if not customer:
+            return {'error': 'Customer not found'}, 404
+
+        total_amount = calculate_total_amount(vehicle, start_date, end_date)
 
         booking = Booking(
             vehicle_id=vehicle_id,
+            customer_id=customer_id,
             start_date=start_date,
             end_date=end_date,
-            total_cost=total_cost,
+            total_amount=total_amount,
             status='pending'
         )
 
@@ -93,9 +100,10 @@ class BookingListResource(Resource):
         response = {
             'id': booking.id,
             'vehicle_id': booking.vehicle_id,
+            'customer_id': booking.customer_id,
             'start_date': booking.start_date.isoformat(),
             'end_date': booking.end_date.isoformat(),
-            'total_cost': booking.total_cost,
+            'total_amount': booking.total_amount,
             'status': booking.status
         }
 

@@ -4,8 +4,43 @@ from flask import request
 from werkzeug.security import generate_password_hash
 from models import db, User, Owner
 from services.auth import generate_token  # optional: auto-login
+from services.protected_resource import ProtectedResource
 
-class UserProfile(Resource):
+class UserProfile(ProtectedResource):
+
+    def get(self):
+        """
+        Get the current user's profile.
+        """
+        user_id = self.user_payload['sub']
+        role = self.user_payload['role']
+
+        if role == 'user':
+            account = User.query.get(user_id)
+        else:
+            account = Owner.query.get(user_id)
+
+        if not account:
+            return {"error": "Account not found"}, 404
+
+        response = {
+            "id": account.id,
+            "name": getattr(account, "name", None),
+            "email": getattr(account, "email", None),
+            "phone_number": getattr(account, "phone_number", None),
+            "residence": getattr(account, "residence", None),
+            "role": role
+        }
+
+        if role == 'owner':
+            response["company_name"] = getattr(account, "company_name", None)
+            response["is_verified"] = getattr(account, "is_verified", False)
+
+        return response, 200
+
+
+class SignupResource(Resource):
+    """Public signup endpoint - no authentication required"""
 
     def post(self):
         """
@@ -54,7 +89,6 @@ class UserProfile(Resource):
                 email=data["email"],
                 phone_number=data["phone_number"],
                 id_number=data["id_number"],
-                residence=data["residence"],
                 company_name=data.get("company_name", ""),  # optional for owner
                 password=generate_password_hash(data["password"]),
                 is_verified=False  # default to not verified
@@ -82,3 +116,37 @@ class UserProfile(Resource):
         }
 
         return response, 201
+
+
+class ProfileResource(ProtectedResource):
+    """Protected profile endpoints for authenticated users"""
+
+    def get(self, id=None):
+        """Get user profile by ID (for admin) or current user"""
+        user_id = self.user_payload['sub']
+        role = self.user_payload['role']
+        
+        target_id = id if id else user_id
+
+        if role == 'user':
+            account = User.query.get(target_id)
+        else:
+            account = Owner.query.get(target_id)
+
+        if not account:
+            return {"error": "Account not found"}, 404
+
+        response = {
+            "id": account.id,
+            "name": getattr(account, "name", None),
+            "email": getattr(account, "email", None),
+            "phone_number": getattr(account, "phone_number", None),
+            "residence": getattr(account, "residence", None),
+            "role": role
+        }
+
+        if role == 'owner':
+            response["company_name"] = getattr(account, "company_name", None)
+            response["is_verified"] = getattr(account, "is_verified", False)
+
+        return response, 200

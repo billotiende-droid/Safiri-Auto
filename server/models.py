@@ -75,6 +75,7 @@ class Vehicle(db.Model, SerializerMixin):
     price_per_day = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(20), nullable=False, default='available')
     is_verified = db.Column(db.Boolean, default=False)
+    image_path = db.Column(db.String(255), nullable=True)
 
     #relationships
     owner = db.relationship('Owner', back_populates='vehicles')

@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from models import db, Payment, Booking
+from services.protected_resource import ProtectedResource
 from datetime import datetime
 import random
 import string
@@ -17,7 +18,7 @@ def calculate_commission(amount):
     owner_amount = amount - commission
     return commission, owner_amount
 
-class PaymentsResource(Resource):
+class PaymentsResource(ProtectedResource):
     def post(self):
         # Create a new payment record for a booking.
         # Payment starts as 'pending' and will be updated to 'paid' when completed.
@@ -115,7 +116,7 @@ class PaymentsResource(Resource):
         ]
         return response_message, 200
     
-class PaymentByID(Resource):
+class PaymentByID(ProtectedResource):
 
     def get(self, id):
         # Get a specific payment by ID
@@ -172,7 +173,7 @@ class PaymentByID(Resource):
             if new_status == "paid" and old_status != "paid":
                 booking = Booking.query.get(payment.booking_id)
                 if booking:
-                    booking.status = "paid"
+                    booking.status = "confirmed"
             
             db.session.commit()
             
