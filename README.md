@@ -30,7 +30,7 @@
 **Safiri Auto** is a modern peer-to-peer vehicle rental platform built with **Next.js 16** (React 19) on the frontend and **Flask** with SQLAlchemy on the backend. The platform enables vehicle owners to list their cars for rent and allows customers to browse and book available vehicles.
 
 ### Live URLs
-- **Frontend**: http://localhost:3000
+- **Frontend**: https://safiri-auto.vercel.app/
 - **Backend API**: http://localhost:5555/api
 
 ---
