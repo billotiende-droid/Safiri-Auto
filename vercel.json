@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd safiri-auto-frontend && npm install",
+  "buildCommand": "cd safiri-auto-frontend && npm run build",
+  "outputDirectory": "safiri-auto-frontend/.next"
+}
